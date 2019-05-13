@@ -1,6 +1,7 @@
 package com.andrzejkarwoski.service;
 
 import com.andrzejkarwoski.model.Word;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedWriter;
@@ -15,7 +16,11 @@ import java.util.stream.Collectors;
 @Service
 public class FileService {
 
-    private String fileName = "words.csv";
+    private String fileName;
+
+    public FileService(@Value("${filename}") String fileName) {
+        this.fileName = fileName;
+    }
 
     public List<Word> readAllFile() throws IOException{
         return Files.readAllLines(Paths.get(fileName))

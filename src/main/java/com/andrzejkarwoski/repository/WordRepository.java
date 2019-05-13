@@ -14,8 +14,7 @@ public class WordRepository {
     private List<Word> words;
 
     @Autowired
-    public WordRepository(){
-        FileService fileService = new FileService();
+    public WordRepository(FileService fileService){
         try{
             words = fileService.readAllFile();
         } catch (IOException e) {
