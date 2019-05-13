@@ -1,8 +1,10 @@
 package com.andrzejkarwoski.controller;
 
+import com.andrzejkarwoski.formater.TextFormatter;
 import com.andrzejkarwoski.model.Word;
 import com.andrzejkarwoski.repository.WordRepository;
 import com.andrzejkarwoski.service.FileService;
+import com.andrzejkarwoski.writer.ConsoleTextWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -19,19 +21,21 @@ public class FlashCardsController {
     private static final int TEST = 1;
     private static final int CLOSE_APP = 2;
 
-    private WordRepository wordRepository = new WordRepository();
-    private FileService fileService = new FileService();
-    private Scanner scanner = new Scanner(System.in);
+    private WordRepository wordRepository;
+    private FileService fileService;
+    private Scanner scanner;
+    private ConsoleTextWriter consoleTextWriter;
 
     @Autowired
-    public FlashCardsController(WordRepository wordRepository, FileService fileService, Scanner scanner) {
+    public FlashCardsController(WordRepository wordRepository, FileService fileService, Scanner scanner, ConsoleTextWriter consoleTextWriter) {
         this.wordRepository = wordRepository;
         this.fileService = fileService;
         this.scanner = scanner;
+        this.consoleTextWriter = consoleTextWriter;
     }
 
     public void mainLoop() {
-        System.out.println("Flash Cards Application");
+        consoleTextWriter.println("Flash Cards Application");
         int option = UNDEFINED;
         while(option != CLOSE_APP) {
             printMenu();
@@ -42,10 +46,10 @@ public class FlashCardsController {
 
 
     private void printMenu() {
-        System.out.println("Wybierz opcję:");
-        System.out.println("0 - Dodaj fiszkę");
-        System.out.println("1 - Przetestuj się");
-        System.out.println("2 - Zamknij program");
+        consoleTextWriter.println("Wybierz opcję:");
+        consoleTextWriter.println("0 - Dodaj fiszkę");
+        consoleTextWriter.println("1 - Przetestuj się");
+        consoleTextWriter.println("2 - Zamknij program");
     }
 
     private int chooseOption() {
@@ -66,17 +70,17 @@ public class FlashCardsController {
     private void close() {
         try {
             fileService.saveWords(wordRepository.getAll());
-            System.out.println("Zapisano stan aplikacji");
+            consoleTextWriter.println("Zapisano stan aplikacji");
         } catch (IOException e) {
-            System.out.println("Nie udało się zapisać zmian");
+            consoleTextWriter.println("Nie udało się zapisać zmian");
         }
-        System.out.println("Bye Bye");
+        consoleTextWriter.println("Bye Bye");
     }
 
     private void addWord() {
-        System.out.println("Podaj polską frazę");
+        consoleTextWriter.println("Podaj polską frazę");
         String polish = scanner.nextLine();
-        System.out.println("Podaj frazę po angielsku");
+        consoleTextWriter.println("Podaj frazę po angielsku");
         String english = scanner.nextLine();
         Word word = new Word(polish, english);
         wordRepository.add(word);
@@ -84,23 +88,23 @@ public class FlashCardsController {
 
     private void test() {
         if(wordRepository.isEmpty()) {
-            System.out.println("Dodaj przynajmniej jedną fiszkę do bazy.");
+            consoleTextWriter.println("Dodaj przynajmniej jedną fiszkę do bazy.");
             return;
         }
         final int testSize = wordRepository.size() > 10 ? 10 : wordRepository.size();
         Set<Word> randomWords = wordRepository.getRandomWords(testSize);
         int score = 0;
         for (Word word : randomWords) {
-            System.out.printf("Podaj tłumaczenie dla :\"%s\"\n", word.getPolish());
+            consoleTextWriter.println(String.format("Podaj tłumaczenie dla :\"%s\"", word.getPolish()));
             String translation = scanner.nextLine();
             if(word.getEnglish().equalsIgnoreCase(translation)) {
-                System.out.println("Odpowiedź poprawna");
+                consoleTextWriter.println("Odpowiedź poprawna");
                 score++;
             } else {
-                System.out.println("Twoja odpowiedź: " + translation + " jest niepoprawna -  poprawna - " + word.getEnglish());
+                consoleTextWriter.println(String.format("Twoja odpowiedź: " + translation + " jest niepoprawna -  poprawna - " + word.getEnglish()));
             }
         }
-        System.out.println("Twój wynik: " +  score + "/" + testSize);
+        consoleTextWriter.println(String.format("Twój wynik: " +  score + "/" + testSize));
     }
 
     private void executeOption(int option) {
@@ -115,7 +119,7 @@ public class FlashCardsController {
                 close();
                 break;
             default:
-                System.out.println("something goes wrong...");
+                consoleTextWriter.println("something goes wrong...");
         }
     }
 }
